@@ -1,16 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11520.95 d18.3
+VisualStudioVersion = 18.3.11520.95
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "GUI\GUI.csproj", "{E01229D5-A95E-480A-BF02-475B1B1ED3AE}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "db_setup", "db_setup", "{B7B6FF33-8E96-4481-A1AB-9056C98AD4AA}"
-	ProjectSection(SolutionItems) = preProject
-		create_mssql.sql = create_mssql.sql
-		create_mysql.sql = create_mysql.sql
-		seed.sql = seed.sql
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
