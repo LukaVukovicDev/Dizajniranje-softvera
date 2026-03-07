@@ -1,6 +1,5 @@
-﻿using GUI;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Input;
 
 namespace GUI
 {
@@ -9,24 +8,47 @@ namespace GUI
         public LoginWindow()
         {
             InitializeComponent();
+            this.DataContext = ConfigManager.Instance;
         }
 
-        public void Login_Click(object sender, RoutedEventArgs e)
+        private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            string username = UsernameBox.Text;
-            string password = PasswordBox.Password;
+            if (e.Key == Key.Enter)
+                btnLogin_Click(sender, e);
+        }
 
-            // privremena provera (kasnije ide baza)
+        private void btnLogin_Click(object sender, RoutedEventArgs e)
+        {
+            string username = txtUser.Text;
+            string password = txtPass.Password;
+
             if (username == "admin" && password == "admin")
             {
                 MainWindow main = new MainWindow();
                 main.Show();
-
                 this.Close();
             }
             else
             {
                 MessageBox.Show("Invalid username or password");
+            }
+        }
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                DragMove();
             }
         }
     }

@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Co-Working Management"
         Height="650"
-        Width="1000">
+        Width="1000"
+        Background="#1B1448">
 
     <DockPanel>
 
@@ -19,7 +20,9 @@
             <TextBlock Text="{Binding ChainName}"
                        FontSize="22"
                        FontWeight="Bold"
-                       VerticalAlignment="Center"/>
+                       VerticalAlignment="Center"
+                       Foreground="White"
+                       />
 
             <!-- Active location -->
             <ComboBox Grid.Column="1"
@@ -106,6 +109,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
+                            <DataGridTextColumn Header="Location"  Width="200"/>
                             <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="200"/>
                             <DataGridTextColumn Header="Membership" Binding="{Binding MembershipType}" Width="150"/>
                             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120"/>
