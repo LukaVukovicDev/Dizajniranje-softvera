@@ -249,11 +249,30 @@
                         <DataGrid.Columns>
 
                             <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                            <DataGridTextColumn Header="User" Binding="{Binding UserName}" Width="200"/>
-                            <DataGridTextColumn Header="Resource" Binding="{Binding ResourceName}" Width="200"/>
-                            <DataGridTextColumn Header="Start" Binding="{Binding StartTime}" Width="150"/>
-                            <DataGridTextColumn Header="End" Binding="{Binding EndTime}" Width="150"/>
-                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120"/>
+
+                            <DataGridTextColumn Header="User"
+                        Binding="{Binding UserName}"
+                        Width="180"/>
+
+                            <DataGridTextColumn Header="Resource"
+                        Binding="{Binding ResourceName}"
+                        Width="180"/>
+
+                            <DataGridTextColumn Header="Location"
+                        Binding="{Binding LocationName}"
+                        Width="150"/>
+
+                            <DataGridTextColumn Header="Start"
+                        Binding="{Binding StartTime}"
+                        Width="140"/>
+
+                            <DataGridTextColumn Header="End"
+                        Binding="{Binding EndTime}"
+                        Width="140"/>
+
+                            <DataGridTextColumn Header="Status"
+                        Binding="{Binding Status}"
+                        Width="120"/>
 
                         </DataGrid.Columns>
 
