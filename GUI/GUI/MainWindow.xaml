@@ -1,78 +1,92 @@
-﻿
-    
-    <Window x:Class="GUI.MainWindow"
+﻿<Window x:Class="GUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Co-Working Management" Height="600" Width="900">
+        Title="Co-Working Management"
+        Height="650"
+        Width="1000">
 
-    <!-- Glavni window za upravljanje -->
-        <DockPanel>
-        <!-- Top bar -->
+    <DockPanel>
+
+        <!-- TOP BAR -->
         <Grid DockPanel.Dock="Top" Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
+                <ColumnDefinition Width="200"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Naziv -->
+            <!-- Chain name -->
             <TextBlock Text="{Binding ChainName}"
-                       FontSize="20"
+                       FontSize="22"
                        FontWeight="Bold"
                        VerticalAlignment="Center"/>
 
+            <!-- Active location -->
+            <ComboBox Grid.Column="1"
+                      Name="ActiveLocationBox"
+                      ItemsSource="{Binding Locations}"
+                      DisplayMemberPath="Name"
+                      SelectedIndex="0"
+                      Margin="10,0"/>
+
             <!-- Logout -->
-            <Button Content="Logout"
-                    Grid.Column="1"
-                    Width="80"
+            <Button Grid.Column="2"
+                    Content="Logout"
+                    Width="90"
                     Height="30"
                     Click="Logout_Click"/>
         </Grid>
 
+
         <TabControl>
-            <!-- Korisnici -->
+
+            <!-- USERS TAB -->
             <TabItem Header="Users">
-                <StackPanel>
 
-                    <!-- Search + Filters -->
-                    <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Left" >
+                <Grid>
 
-                        <!-- Search -->
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- FILTER BAR -->
+                    <StackPanel Orientation="Horizontal" Margin="10">
+
                         <TextBox Width="200"
-                     Name="SearchBox"
-                     TextChanged="SearchBox_TextChanged"
-                     ToolTip="Search user"/>
+                                 Name="SearchBox"
+                                 TextChanged="SearchBox_TextChanged"
+                                 ToolTip="Search user"/>
 
-                        <!-- Location filter -->
                         <ComboBox Width="150"
-                              Name="LocationFilter"
-                              SelectionChanged="Filter_Changed"
+                                  Margin="10,0"
+                                  Name="LocationFilter"
+                                  SelectionChanged="Filter_Changed"
                                   SelectedIndex="0">
-
                             <ComboBoxItem Content="All"/>
                             <ComboBoxItem Content="Beograd"/>
                             <ComboBoxItem Content="Niš"/>
                             <ComboBoxItem Content="Novi Sad"/>
                             <ComboBoxItem Content="Kragujevac"/>
-
                         </ComboBox>
 
-                        <!-- Membership filter -->
                         <ComboBox Width="150"
-                      Name="MembershipFilter"
-                      SelectionChanged="Filter_Changed"
+                                  Margin="10,0"
+                                  Name="MembershipFilter"
+                                  SelectionChanged="Filter_Changed"
                                   SelectedIndex="0">
                             <ComboBoxItem Content="All"/>
                             <ComboBoxItem Content="dnevna karta"/>
                             <ComboBoxItem Content="fleksibilni sto"/>
                             <ComboBoxItem Content="fiksni sto"/>
                             <ComboBoxItem Content="premium"/>
-                           
                         </ComboBox>
 
-                        <!-- Status filter -->
                         <ComboBox Width="150"
-                      Name="StatusFilter"
-                      SelectionChanged="Filter_Changed"
+                                  Margin="10,0"
+                                  Name="StatusFilter"
+                                  SelectionChanged="Filter_Changed"
                                   SelectedIndex="0">
                             <ComboBoxItem Content="All"/>
                             <ComboBoxItem Content="Aktivan"/>
@@ -82,50 +96,186 @@
 
                     </StackPanel>
 
-                    <!-- DataGrid -->
-                    <DataGrid ItemsSource="{Binding Users}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  Margin="10">
+
+                    <!-- USERS TABLE -->
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding Users}"
+                              AutoGenerateColumns="False"
+                              Margin="10">
+
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" />
-                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
-                            <DataGridTextColumn Header="Email" Binding="{Binding Email}" />
-                            <DataGridTextColumn Header="Membership" Binding="{Binding MembershipType}" />
-                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
+                            <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="200"/>
+                            <DataGridTextColumn Header="Membership" Binding="{Binding MembershipType}" Width="150"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120"/>
                         </DataGrid.Columns>
+
                     </DataGrid>
 
-                </StackPanel>
+                    <!-- ACTIONS -->
+                    <StackPanel Grid.Row="2"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                Margin="10">
+
+                        <Button Content="Add User" Width="100" Margin="5"/>
+                        <Button Content="Edit User" Width="100" Margin="5"/>
+                        <Button Content="Delete User" Width="100" Margin="5"/>
+
+                    </StackPanel>
+
+                </Grid>
+
             </TabItem>
 
-            <!-- Lokacije -->
+
+
+            <!-- LOCATIONS TAB -->
             <TabItem Header="Locations">
-                <DataGrid ItemsSource="{Binding Locations}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" Margin="10">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" />
-                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
-                        <DataGridTextColumn Header="City" Binding="{Binding City}" />
-                        <DataGridTextColumn Header="Max Capacity" Binding="{Binding MaxCapacity}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <DataGrid ItemsSource="{Binding Locations}"
+                              AutoGenerateColumns="False"
+                              Margin="10">
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
+                            <DataGridTextColumn Header="City" Binding="{Binding City}" Width="150"/>
+                            <DataGridTextColumn Header="Max Capacity" Binding="{Binding MaxCapacity}" Width="150"/>
+                        </DataGrid.Columns>
+
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="1"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                Margin="10">
+
+                        <Button Content="Add Location" Width="120" Margin="5"/>
+                        <Button Content="Edit Location" Width="120" Margin="5"/>
+                        <Button Content="Delete Location" Width="120" Margin="5"/>
+
+                    </StackPanel>
+
+                </Grid>
+
             </TabItem>
 
-            <!-- Rezervacije -->
-            <TabItem Header="Reservations">
-                <DataGrid ItemsSource="{Binding Reservations}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" Margin="10">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" />
-                        <DataGridTextColumn Header="User" Binding="{Binding UserName}" />
-                        <DataGridTextColumn Header="Resource" Binding="{Binding ResourceName}" />
-                        <DataGridTextColumn Header="Start" Binding="{Binding StartTime}" />
-                        <DataGridTextColumn Header="End" Binding="{Binding EndTime}" />
-                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+
+
+            <!-- RESOURCES TAB -->
+            <TabItem Header="Resources">
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <!-- resource filter -->
+                    <StackPanel Orientation="Horizontal" Margin="10">
+
+                        <TextBlock Text="Type:" VerticalAlignment="Center"/>
+
+                        <ComboBox Width="150" Margin="10,0">
+                            <ComboBoxItem Content="All"/>
+                            <ComboBoxItem Content="Desk"/>
+                            <ComboBoxItem Content="Meeting Room"/>
+                        </ComboBox>
+
+                    </StackPanel>
+
+                    <DataGrid Grid.Row="1"
+                              AutoGenerateColumns="False"
+                              Margin="10">
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID"/>
+                            <DataGridTextColumn Header="Name"/>
+                            <DataGridTextColumn Header="Type"/>
+                            <DataGridTextColumn Header="Location"/>
+                        </DataGrid.Columns>
+
+                    </DataGrid>
+
+                </Grid>
+
             </TabItem>
+
+
+
+            <!-- RESERVATIONS TAB -->
+            <TabItem Header="Reservations">
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- filters -->
+                    <StackPanel Orientation="Horizontal" Margin="10">
+
+                        <TextBlock Text="Date:" VerticalAlignment="Center"/>
+
+                        <DatePicker Name="ReservationDate" Margin="10,0"/>
+
+                        <TextBlock Text="Location:" VerticalAlignment="Center"/>
+
+                        <ComboBox Width="150"
+                                  ItemsSource="{Binding Locations}"
+                                  DisplayMemberPath="Name"
+                                  Margin="10,0"/>
+
+                    </StackPanel>
+
+
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding Reservations}"
+                              AutoGenerateColumns="False"
+                              Margin="10">
+
+                        <DataGrid.Columns>
+
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="User" Binding="{Binding UserName}" Width="200"/>
+                            <DataGridTextColumn Header="Resource" Binding="{Binding ResourceName}" Width="200"/>
+                            <DataGridTextColumn Header="Start" Binding="{Binding StartTime}" Width="150"/>
+                            <DataGridTextColumn Header="End" Binding="{Binding EndTime}" Width="150"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120"/>
+
+                        </DataGrid.Columns>
+
+                    </DataGrid>
+
+
+                    <StackPanel Grid.Row="2"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                Margin="10">
+
+                        <Button Content="New Reservation" Width="130" Margin="5"/>
+                        <Button Content="Edit Reservation" Width="130" Margin="5"/>
+                        <Button Content="Cancel Reservation" Width="130" Margin="5"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+            </TabItem>
+
         </TabControl>
+
     </DockPanel>
 </Window>
