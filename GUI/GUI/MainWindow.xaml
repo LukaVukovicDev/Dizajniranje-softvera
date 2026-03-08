@@ -101,11 +101,13 @@
 
 
                     <!-- USERS TABLE -->
-                    <DataGrid Grid.Row="1"
-                              ItemsSource="{Binding Users}"
-                              AutoGenerateColumns="False"
-                              Margin="10">
-
+                    <DataGrid x:Name="UsersDataGrid"
+          Grid.Row="1"
+          ItemsSource="{Binding Users}"
+          AutoGenerateColumns="False"
+          Margin="10"
+          IsReadOnly="True">
+                        <!-- pocetno needitable -->
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
@@ -114,7 +116,6 @@
                             <DataGridTextColumn Header="Membership" Binding="{Binding MembershipType}" Width="150"/>
                             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120"/>
                         </DataGrid.Columns>
-
                     </DataGrid>
 
                     <!-- ACTIONS -->
@@ -124,7 +125,7 @@
                                 Margin="10">
 
                         <Button Content="Add User" Width="100" Margin="5"/>
-                        <Button Content="Edit User" Width="100" Margin="5"/>
+                        <Button x:Name="EditUserBtn" Content="Edit User" Width="100" Margin="5" Click="EditUserBtn_Click"/>
                         <Button Content="Delete User" Width="100" Margin="5"/>
 
                     </StackPanel>

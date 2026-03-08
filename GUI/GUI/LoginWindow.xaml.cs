@@ -8,7 +8,7 @@ namespace GUI
         public LoginWindow()
         {
             InitializeComponent();
-            this.DataContext = ConfigManager.Instance;
+           // this.DataContext = ConfigManager.Instance;
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)

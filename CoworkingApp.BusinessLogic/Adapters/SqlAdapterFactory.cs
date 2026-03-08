@@ -1,6 +1,8 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
-using MySql.Data.MySqlClient;
+//using MySql.Data.MySqlClient;
+using MySqlConnector;
+
 
 namespace CoworkingApp.BusinessLogic.Adapters
 {

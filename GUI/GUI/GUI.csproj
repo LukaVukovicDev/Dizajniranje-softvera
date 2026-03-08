@@ -23,4 +23,12 @@
     <Folder Include="Views\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MySql.Data" Version="9.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\CoworkingApp.BusinessLogic\CoworkingApp.BusinessLogic.csproj" />
+  </ItemGroup>
+
 </Project>

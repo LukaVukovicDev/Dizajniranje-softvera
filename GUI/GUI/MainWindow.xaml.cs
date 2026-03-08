@@ -1,4 +1,7 @@
-﻿using GUI.Models;
+﻿using CoworkingApp.BusinessLogic.Database;
+using CoworkingApp.BusinessLogic.Models;
+using CoworkingApp.BusinessLogic.Services;
+using System.ComponentModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.ComponentModel;
 
 namespace GUI
 {
@@ -24,13 +26,47 @@ namespace GUI
         public MainWindow()
         {
             InitializeComponent();
-            this.Title = ConfigManager.Instance.ChainName;
-            DataContext = new MainWindowViewModel();
 
+            // Kreiraj i dodeli ViewModel
+            var config = new ConfigReader("config.txt"); // uzimamo chain name iz fajla
+            var facade = CoworkingFacade.GetInstance(config.ConnectionString);
+            DataContext = new MainWindowViewModel(facade, config);
+
+            // Sada je DataContext sigurno postavljen
             usersView = CollectionViewSource.GetDefaultView(
-    ((MainWindowViewModel)DataContext).Users
-);
+                ((MainWindowViewModel)DataContext).Users
+            );
             usersView.Filter = FilterUsers;
+        }
+
+        private bool isEditingUsers = false;
+
+        private void EditUserBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isEditingUsers)
+            {
+                // Omoguci editovanje DataGrid-a
+                UsersDataGrid.IsReadOnly = false;
+
+                // Promeni tekst dugmeta u "Save"
+                EditUserBtn.Content = "Save";
+
+                isEditingUsers = true;
+            }
+            else
+            {
+                // Sacuvaj promene 
+                UsersDataGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+                UsersDataGrid.CommitEdit(DataGridEditingUnit.Row, true);
+
+                // Ponovo zakljuci DataGrid
+                UsersDataGrid.IsReadOnly = true;
+
+                // Vrati dugme na "Edit User"
+                EditUserBtn.Content = "Edit User";
+
+                isEditingUsers = false;
+            }
         }
 
         private bool FilterUsers(object obj)
@@ -45,30 +81,32 @@ namespace GUI
 
             if (!string.IsNullOrEmpty(searchText))
             {
-                if (!user.Name.ToLower().Contains(searchText) &&
+                if (!user.FullName.ToLower().Contains(searchText) &&
                     !user.Email.ToLower().Contains(searchText))
                     return false;
             }
 
             // MEMBERSHIP
             string membership = "All";
+
             if (MembershipFilter.SelectedItem is ComboBoxItem m)
-                membership = m.Content.ToString();
+                membership = m.Content?.ToString() ?? "All";
 
             if (membership != "All")
-            {
-                if (user.MembershipType != membership)
-                    return false;
-            }
+{
+    if (user.MembershipType == null || user.MembershipType.Name != membership)
+        return false;
+}
 
             // STATUS
             string status = "All";
+
             if (StatusFilter.SelectedItem is ComboBoxItem s)
-                status = s.Content.ToString();
+                status = s.Content?.ToString() ?? "All";
 
             if (status != "All")
             {
-                if (user.Status != status)
+                if (user.Status.ToString() != status)
                     return false;
             }
 
