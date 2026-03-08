@@ -1,0 +1,113 @@
+﻿-- ============================================================
+-- create_mssql.sql - Co-working sistem
+-- Kompatibilno sa: Microsoft SQL Server (MSSQL)
+-- ============================================================
+
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'CoWorkingDB')
+    CREATE DATABASE CoWorkingDB;
+GO
+USE CoWorkingDB;
+GO
+
+-- Obrisi stare tabele (redosled zbog FK constraints)
+IF OBJECT_ID('Reservations',    'U') IS NOT NULL DROP TABLE Reservations;
+IF OBJECT_ID('Resources',       'U') IS NOT NULL DROP TABLE Resources;
+IF OBJECT_ID('Users',           'U') IS NOT NULL DROP TABLE Users;
+IF OBJECT_ID('Locations',       'U') IS NOT NULL DROP TABLE Locations;
+IF OBJECT_ID('MembershipTypes', 'U') IS NOT NULL DROP TABLE MembershipTypes;
+IF OBJECT_ID('Admins',          'U') IS NOT NULL DROP TABLE Admins;
+GO
+
+-- Admins
+CREATE TABLE Admins (
+    Id           INT IDENTITY(1,1) PRIMARY KEY,
+    Username     NVARCHAR(100) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(256) NOT NULL,
+    CreatedAt    DATETIME2 DEFAULT GETDATE()
+);
+GO
+
+-- MembershipTypes
+CREATE TABLE MembershipTypes (
+    Id                          INT IDENTITY(1,1) PRIMARY KEY,
+    Name                        NVARCHAR(100) NOT NULL,
+    Price                       DECIMAL(10,2) NOT NULL,
+    DurationDays                INT NOT NULL,
+    MaxReservationHoursPerMonth INT NOT NULL DEFAULT 0,
+    IncludesMeetingRooms        BIT NOT NULL DEFAULT 0,
+    MeetingRoomHoursPerMonth    INT NOT NULL DEFAULT 0,
+    Description                 NVARCHAR(MAX)
+);
+GO
+
+-- Locations
+CREATE TABLE Locations (
+    Id           INT IDENTITY(1,1) PRIMARY KEY,
+    Name         NVARCHAR(150) NOT NULL,
+    Address      NVARCHAR(255) NOT NULL,
+    City         NVARCHAR(100) NOT NULL,
+    WorkingHours NVARCHAR(100),
+    MaxCapacity  INT NOT NULL DEFAULT 0,
+    Description  NVARCHAR(MAX)
+);
+GO
+
+-- Users
+CREATE TABLE Users (
+    Id                  INT IDENTITY(1,1) PRIMARY KEY,
+    FirstName           NVARCHAR(100) NOT NULL,
+    LastName            NVARCHAR(100) NOT NULL,
+    Email               NVARCHAR(200) NOT NULL UNIQUE,
+    Phone               NVARCHAR(30),
+    MembershipTypeId    INT NOT NULL,
+    MembershipStartDate DATE NOT NULL,
+    MembershipEndDate   DATE NOT NULL,
+    Status              NVARCHAR(10) NOT NULL DEFAULT 'Active'
+        CHECK (Status IN ('Active','Paused','Expired')),
+    CONSTRAINT FK_Users_MembershipType FOREIGN KEY (MembershipTypeId)
+        REFERENCES MembershipTypes(Id)
+);
+GO
+
+-- Resources
+CREATE TABLE Resources (
+    Id                      INT IDENTITY(1,1) PRIMARY KEY,
+    LocationId              INT NOT NULL,
+    Name                    NVARCHAR(150) NOT NULL,
+    Type                    NVARCHAR(20) NOT NULL
+        CHECK (Type IN ('HotDesk','DedicatedDesk','PrivateOffice','MeetingRoom')),
+    Description             NVARCHAR(MAX),
+    IsAvailable             BIT NOT NULL DEFAULT 1,
+    Capacity                INT,
+    HasProjector            BIT DEFAULT 0,
+    HasTV                   BIT DEFAULT 0,
+    HasWhiteboard           BIT DEFAULT 0,
+    HasOnlineMeetingEquipment BIT DEFAULT 0,
+    SubType                 NVARCHAR(20),
+    CONSTRAINT FK_Resources_Location FOREIGN KEY (LocationId)
+        REFERENCES Locations(Id)
+);
+GO
+
+-- Reservations
+CREATE TABLE Reservations (
+    Id            INT IDENTITY(1,1) PRIMARY KEY,
+    UserId        INT NOT NULL,
+    ResourceId    INT NOT NULL,
+    StartDateTime DATETIME2 NOT NULL,
+    EndDateTime   DATETIME2 NOT NULL,
+    Status        NVARCHAR(10) NOT NULL DEFAULT 'Active'
+        CHECK (Status IN ('Active','Completed','Cancelled')),
+    CreatedAt     DATETIME2 DEFAULT GETDATE(),
+    CONSTRAINT FK_Reservations_User FOREIGN KEY (UserId)
+        REFERENCES Users(Id),
+    CONSTRAINT FK_Reservations_Resource FOREIGN KEY (ResourceId)
+        REFERENCES Resources(Id)
+);
+GO
+
+-- Indeksi
+CREATE INDEX IDX_Reservations_StartEnd ON Reservations(StartDateTime, EndDateTime);
+CREATE INDEX IDX_Reservations_User     ON Reservations(UserId);
+CREATE INDEX IDX_Resources_Location    ON Resources(LocationId);
+GO
