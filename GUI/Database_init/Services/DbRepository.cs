@@ -59,8 +59,8 @@ namespace GUI.Services
             using var cmd = conn.CreateCommand(@"
                 UPDATE Admins
                 SET Username = @Username, PasswordHash = @PasswordHash
-                WHERE AdminID = @AdminID");
-            AddParam(cmd, "@AdminID", adminId);
+                WHERE Id = @Id");
+            AddParam(cmd, "@Id", adminId);
             AddParam(cmd, "@Username", username);
             AddParam(cmd, "@PasswordHash", passwordHash);
             cmd.ExecuteNonQuery();
@@ -69,8 +69,8 @@ namespace GUI.Services
         public void DeleteAdmin(int adminId)
         {
             using var conn = OpenConnection();
-            using var cmd = conn.CreateCommand("DELETE FROM Admins WHERE AdminID = @AdminID");
-            AddParam(cmd, "@AdminID", adminId);
+            using var cmd = conn.CreateCommand("DELETE FROM Admins WHERE Id = @Id");
+            AddParam(cmd, "@Id", adminId);
             cmd.ExecuteNonQuery();
         }
 
@@ -84,7 +84,7 @@ namespace GUI.Services
             using var cmd = conn.CreateCommand(@"
                 INSERT INTO MembershipTypes
                     (Name, Price, DurationDays, MaxReservationHoursPerMonth,
-                     IncludesMeetingRooms, MeetingRoomHoursMonth, Description)
+                     IncludesMeetingRooms, MeetingRoomHoursPerMonth, Description)
                 VALUES
                     (@Name, @Price, @DurationDays, @MaxHours,
                      @IncludesMeetingRooms, @MeetingRoomHours, @Description)");
@@ -107,9 +107,9 @@ namespace GUI.Services
                 SET Name = @Name, Price = @Price, DurationDays = @DurationDays,
                     MaxReservationHoursPerMonth = @MaxHours,
                     IncludesMeetingRooms = @IncludesMeetingRooms,
-                    MeetingRoomHoursMonth = @MeetingRoomHours,
+                    MeetingRoomHoursPerMonth = @MeetingRoomHours,
                     Description = @Description
-                WHERE ID = @ID");
+                WHERE Id = @Id");
             AddParam(cmd, "@ID", id);
             AddParam(cmd, "@Name", name);
             AddParam(cmd, "@Price", price);
@@ -124,7 +124,7 @@ namespace GUI.Services
         public void DeleteMembershipType(int id)
         {
             using var conn = OpenConnection();
-            using var cmd = conn.CreateCommand("DELETE FROM MembershipTypes WHERE ID = @ID");
+            using var cmd = conn.CreateCommand("DELETE FROM MembershipTypes WHERE Id = @Id");
             AddParam(cmd, "@ID", id);
             cmd.ExecuteNonQuery();
         }
@@ -157,7 +157,7 @@ namespace GUI.Services
                 SET Name = @Name, Address = @Address, City = @City,
                     WorkingHours = @WorkingHours, MaxCapacity = @MaxCapacity,
                     Description = @Description
-                WHERE ID = @ID");
+                WHERE Id = @Id");
             AddParam(cmd, "@ID", id);
             AddParam(cmd, "@Name", name);
             AddParam(cmd, "@Address", address);
@@ -171,7 +171,7 @@ namespace GUI.Services
         public void DeleteLocation(int id)
         {
             using var conn = OpenConnection();
-            using var cmd = conn.CreateCommand("DELETE FROM Locations WHERE ID = @ID");
+            using var cmd = conn.CreateCommand("DELETE FROM Locations WHERE Id = @Id");
             AddParam(cmd, "@ID", id);
             cmd.ExecuteNonQuery();
         }
@@ -186,16 +186,16 @@ namespace GUI.Services
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand(@"
                 INSERT INTO Users
-                    (FirstName, LastName, Email, Phone, MembershipTypeID,
+                    (FirstName, LastName, Email, Phone, MembershipTypeId,
                      MembershipStartDate, MembershipEndDate, Status)
                 VALUES
-                    (@FirstName, @LastName, @Email, @Phone, @MembershipTypeID,
+                    (@FirstName, @LastName, @Email, @Phone, @MembershipTypeId,
                      @MembershipStart, @MembershipEnd, @Status)");
             AddParam(cmd, "@FirstName", firstName);
             AddParam(cmd, "@LastName", lastName);
             AddParam(cmd, "@Email", email);
             AddParam(cmd, "@Phone", phone);
-            AddParam(cmd, "@MembershipTypeID", membershipTypeId);
+            AddParam(cmd, "@MembershipTypeId", membershipTypeId);
             AddParam(cmd, "@MembershipStart", membershipStart.Date);
             AddParam(cmd, "@MembershipEnd", membershipEnd.Date);
             AddParam(cmd, "@Status", status);
@@ -210,16 +210,16 @@ namespace GUI.Services
             using var cmd = conn.CreateCommand(@"
                 UPDATE Users
                 SET FirstName = @FirstName, LastName = @LastName, Email = @Email,
-                    Phone = @Phone, MembershipTypeID = @MembershipTypeID,
+                    Phone = @Phone, MembershipTypeId = @MembershipTypeId,
                     MembershipStartDate = @MembershipStart,
                     MembershipEndDate = @MembershipEnd, Status = @Status
-                WHERE ID = @ID");
+                WHERE Id = @Id");
             AddParam(cmd, "@ID", id);
             AddParam(cmd, "@FirstName", firstName);
             AddParam(cmd, "@LastName", lastName);
             AddParam(cmd, "@Email", email);
             AddParam(cmd, "@Phone", phone);
-            AddParam(cmd, "@MembershipTypeID", membershipTypeId);
+            AddParam(cmd, "@MembershipTypeId", membershipTypeId);
             AddParam(cmd, "@MembershipStart", membershipStart.Date);
             AddParam(cmd, "@MembershipEnd", membershipEnd.Date);
             AddParam(cmd, "@Status", status);
@@ -229,7 +229,7 @@ namespace GUI.Services
         public void DeleteUser(int id)
         {
             using var conn = OpenConnection();
-            using var cmd = conn.CreateCommand("DELETE FROM Users WHERE ID = @ID");
+            using var cmd = conn.CreateCommand("DELETE FROM Users WHERE Id = @Id");
             AddParam(cmd, "@ID", id);
             cmd.ExecuteNonQuery();
         }
@@ -245,14 +245,14 @@ namespace GUI.Services
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand(@"
                 INSERT INTO Resources
-                    (LocationID, Name, ResourceType, Description, IsAvailable,
+                    (LocationId, Name, Type, Description, IsAvailable,
                      Capacity, HasProjector, HasTV, HasWhiteboard, HasOnlineEquipment)
                 VALUES
-                    (@LocationID, @Name, @ResourceType, @Description, @IsAvailable,
+                    (@LocationId, @Name, @Type, @Description, @IsAvailable,
                      @Capacity, @HasProjector, @HasTV, @HasWhiteboard, @HasOnlineEquipment)");
-            AddParam(cmd, "@LocationID", locationId);
+            AddParam(cmd, "@LocationId", locationId);
             AddParam(cmd, "@Name", name);
-            AddParam(cmd, "@ResourceType", resourceType);
+            AddParam(cmd, "@Type", resourceType);
             AddParam(cmd, "@Description", description);
             AddParam(cmd, "@IsAvailable", isAvailable ? 1 : 0);
             AddParam(cmd, "@Capacity", (object?)capacity ?? DBNull.Value);
@@ -271,16 +271,16 @@ namespace GUI.Services
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand(@"
                 UPDATE Resources
-                SET LocationID = @LocationID, Name = @Name, ResourceType = @ResourceType,
+                SET LocationId = @LocationId, Name = @Name, Type = @Type,
                     Description = @Description, IsAvailable = @IsAvailable,
                     Capacity = @Capacity, HasProjector = @HasProjector,
                     HasTV = @HasTV, HasWhiteboard = @HasWhiteboard,
                     HasOnlineEquipment = @HasOnlineEquipment
-                WHERE ID = @ID");
+                WHERE Id = @Id");
             AddParam(cmd, "@ID", id);
-            AddParam(cmd, "@LocationID", locationId);
+            AddParam(cmd, "@LocationId", locationId);
             AddParam(cmd, "@Name", name);
-            AddParam(cmd, "@ResourceType", resourceType);
+            AddParam(cmd, "@Type", resourceType);
             AddParam(cmd, "@Description", description);
             AddParam(cmd, "@IsAvailable", isAvailable ? 1 : 0);
             AddParam(cmd, "@Capacity", (object?)capacity ?? DBNull.Value);
@@ -294,7 +294,7 @@ namespace GUI.Services
         public void DeleteResource(int id)
         {
             using var conn = OpenConnection();
-            using var cmd = conn.CreateCommand("DELETE FROM Resources WHERE ID = @ID");
+            using var cmd = conn.CreateCommand("DELETE FROM Resources WHERE Id = @Id");
             AddParam(cmd, "@ID", id);
             cmd.ExecuteNonQuery();
         }
@@ -307,10 +307,10 @@ namespace GUI.Services
         {
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand(@"
-                INSERT INTO Reservations (UserID, ResourceID, StartDateTime, EndDateTime, Status)
-                VALUES (@UserID, @ResourceID, @StartDateTime, @EndDateTime, @Status)");
-            AddParam(cmd, "@UserID", userId);
-            AddParam(cmd, "@ResourceID", resourceId);
+                INSERT INTO Reservations (UserId, ResourceId, StartDateTime, EndDateTime, Status)
+                VALUES (@UserId, @ResourceId, @StartDateTime, @EndDateTime, @Status)");
+            AddParam(cmd, "@UserId", userId);
+            AddParam(cmd, "@ResourceId", resourceId);
             AddParam(cmd, "@StartDateTime", startDateTime);
             AddParam(cmd, "@EndDateTime", endDateTime);
             AddParam(cmd, "@Status", status);
@@ -323,13 +323,13 @@ namespace GUI.Services
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand(@"
                 UPDATE Reservations
-                SET UserID = @UserID, ResourceID = @ResourceID,
+                SET UserId = @UserId, ResourceId = @ResourceId,
                     StartDateTime = @StartDateTime, EndDateTime = @EndDateTime,
                     Status = @Status
-                WHERE ID = @ID");
-            AddParam(cmd, "@ID", id);
-            AddParam(cmd, "@UserID", userId);
-            AddParam(cmd, "@ResourceID", resourceId);
+                WHERE Id = @Id");
+            AddParam(cmd, "@Id", id);
+            AddParam(cmd, "@UserId", userId);
+            AddParam(cmd, "@ResourceId", resourceId);
             AddParam(cmd, "@StartDateTime", startDateTime);
             AddParam(cmd, "@EndDateTime", endDateTime);
             AddParam(cmd, "@Status", status);
@@ -340,7 +340,7 @@ namespace GUI.Services
         {
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand(
-                "UPDATE Reservations SET Status = 'cancelled' WHERE ID = @ID");
+                "UPDATE Reservations SET Status = 'cancelled' WHERE Id = @Id");
             AddParam(cmd, "@ID", id);
             cmd.ExecuteNonQuery();
         }
@@ -348,7 +348,7 @@ namespace GUI.Services
         public void DeleteReservation(int id)
         {
             using var conn = OpenConnection();
-            using var cmd = conn.CreateCommand("DELETE FROM Reservations WHERE ID = @ID");
+            using var cmd = conn.CreateCommand("DELETE FROM Reservations WHERE Id = @Id");
             AddParam(cmd, "@ID", id);
             cmd.ExecuteNonQuery();
         }

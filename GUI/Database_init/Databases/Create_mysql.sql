@@ -2,9 +2,19 @@
 -- create_mysql.sql - Co-working sistem
 -- Kompatibilno sa: MySQL 8+
 -- ============================================================
+CREATE DATABASE IF NOT EXISTS CoWorkingDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE CoWorkingDB;
+
+-- Obrisi stare tabele (redosled zbog FK constraints)
+DROP TABLE IF EXISTS Reservations;
+DROP TABLE IF EXISTS Resources;
+DROP TABLE IF EXISTS Users;
+DROP TABLE IF EXISTS Locations;
+DROP TABLE IF EXISTS MembershipTypes;
+DROP TABLE IF EXISTS Admins;
 
 -- Admins
-CREATE TABLE IF NOT EXISTS Admins (
+CREATE TABLE Admins (
     Id           INT PRIMARY KEY AUTO_INCREMENT,
     Username     VARCHAR(100) NOT NULL UNIQUE,
     PasswordHash VARCHAR(256) NOT NULL,
@@ -12,7 +22,7 @@ CREATE TABLE IF NOT EXISTS Admins (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- MembershipTypes
-CREATE TABLE IF NOT EXISTS MembershipTypes (
+CREATE TABLE MembershipTypes (
     Id                          INT PRIMARY KEY AUTO_INCREMENT,
     Name                        VARCHAR(100) NOT NULL,
     Price                       DECIMAL(10,2) NOT NULL,
@@ -24,7 +34,7 @@ CREATE TABLE IF NOT EXISTS MembershipTypes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Locations
-CREATE TABLE IF NOT EXISTS Locations (
+CREATE TABLE Locations (
     Id           INT PRIMARY KEY AUTO_INCREMENT,
     Name         VARCHAR(150) NOT NULL,
     Address      VARCHAR(255) NOT NULL,
@@ -35,7 +45,7 @@ CREATE TABLE IF NOT EXISTS Locations (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Users
-CREATE TABLE IF NOT EXISTS Users (
+CREATE TABLE Users (
     Id                  INT PRIMARY KEY AUTO_INCREMENT,
     FirstName           VARCHAR(100) NOT NULL,
     LastName            VARCHAR(100) NOT NULL,
@@ -50,7 +60,7 @@ CREATE TABLE IF NOT EXISTS Users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Resources
-CREATE TABLE IF NOT EXISTS Resources (
+CREATE TABLE Resources (
     Id                        INT PRIMARY KEY AUTO_INCREMENT,
     LocationId                INT NOT NULL,
     Name                      VARCHAR(150) NOT NULL,
@@ -68,7 +78,7 @@ CREATE TABLE IF NOT EXISTS Resources (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Reservations
-CREATE TABLE IF NOT EXISTS Reservations (
+CREATE TABLE Reservations (
     Id            INT PRIMARY KEY AUTO_INCREMENT,
     UserId        INT NOT NULL,
     ResourceId    INT NOT NULL,

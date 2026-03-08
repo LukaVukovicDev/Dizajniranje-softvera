@@ -1,14 +1,12 @@
 ﻿-- ============================================================
 -- Seed.sql - Inicijalni podaci za Co-working sistem
--- Uskladjeno sa novim nazivima kolona
+-- Kompatibilno sa MSSQL i MySQL
+-- NAPOMENA: Nema GO i USE - Program.cs hendluje to sam
 -- ============================================================
-USE CoWorkingDB;
-GO
 
--- Admins (lozinka: "admin123" - BCrypt hash, zameniti pravim hashom)
+-- Admins
 INSERT INTO Admins (Username, PasswordHash) VALUES
 ('admin', '$2a$11$KmvL1QJ7J9Q1Q1Q1Q1Q1QeQ1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1');
-GO
 
 -- MembershipTypes
 INSERT INTO MembershipTypes (Name, Price, DurationDays, MaxReservationHoursPerMonth, IncludesMeetingRooms, MeetingRoomHoursPerMonth, Description) VALUES
@@ -16,14 +14,12 @@ INSERT INTO MembershipTypes (Name, Price, DurationDays, MaxReservationHoursPerMo
 ('Fleksibilni sto',  8000.00, 30,  40, 0,  0, 'Hot desk po izboru, 40h/mes, bez sala za sastanke.'),
 ('Fiksni sto',      12000.00, 30,  80, 1,  4, 'Dedicated desk, 80h/mes, ukljuceno 4h sala mesecno.'),
 ('Premium',         18000.00, 30, 160, 1, 10, 'Neogranicen pristup, 10h sala mesecno, privatna kancelarija.');
-GO
 
 -- Locations
 INSERT INTO Locations (Name, Address, City, WorkingHours, MaxCapacity, Description) VALUES
 ('HubSpace Kragujevac', 'Ulica Kneza Milosa 14',  'Kragujevac', '08:00-22:00', 60,  'Glavni hub u centru Kragujevca.'),
 ('HubSpace Beograd',    'Bulevar Oslobodjenja 5', 'Beograd',    '07:00-23:00', 120, 'Najveci hub, savremeno opremljen.'),
 ('HubSpace Novi Sad',   'Zmaj Jovina 22',         'Novi Sad',   '08:00-21:00', 45,  'Hub u srcu Novog Sada.');
-GO
 
 -- Resources - Kragujevac (LocationId = 1)
 INSERT INTO Resources (LocationId, Name, Type, SubType, Description, IsAvailable) VALUES
@@ -33,12 +29,10 @@ INSERT INTO Resources (LocationId, Name, Type, SubType, Description, IsAvailable
 (1, 'DD-01', 'DedicatedDesk', 'DedicatedDesk', 'Fiksni sto, ergonomska stolica',  1),
 (1, 'DD-02', 'DedicatedDesk', 'DedicatedDesk', 'Fiksni sto, dual monitor setup',  0),
 (1, 'PO-01', 'PrivateOffice', NULL,            'Privatna kancelarija za 2 osobe', 1);
-GO
 
 INSERT INTO Resources (LocationId, Name, Type, Description, IsAvailable, Capacity, HasProjector, HasTV, HasWhiteboard, HasOnlineMeetingEquipment) VALUES
 (1, 'Sala Morava',   'MeetingRoom', 'Sala za manje sastanke',    1,  6, 0, 1, 1, 1),
 (1, 'Sala Sumadija', 'MeetingRoom', 'Velika konferencijska sala', 1, 20, 1, 1, 1, 1);
-GO
 
 -- Resources - Beograd (LocationId = 2)
 INSERT INTO Resources (LocationId, Name, Type, SubType, Description, IsAvailable) VALUES
@@ -49,13 +43,11 @@ INSERT INTO Resources (LocationId, Name, Type, SubType, Description, IsAvailable
 (2, 'DD-02', 'DedicatedDesk', 'DedicatedDesk', 'Fiksni sto B zona',       1),
 (2, 'PO-01', 'PrivateOffice', NULL,            'Kancelarija za 4 osobe',  1),
 (2, 'PO-02', 'PrivateOffice', NULL,            'Kancelarija za 6 osoba',  0);
-GO
 
 INSERT INTO Resources (LocationId, Name, Type, Description, IsAvailable, Capacity, HasProjector, HasTV, HasWhiteboard, HasOnlineMeetingEquipment) VALUES
 (2, 'Sala Tesla',  'MeetingRoom', 'Premium sala sa punom opremom', 1, 12, 1, 1, 1, 1),
 (2, 'Sala Nikola', 'MeetingRoom', 'Manja sala za timove',          1,  6, 0, 1, 1, 0),
 (2, 'Sala Vuk',    'MeetingRoom', 'Velika konferencijska sala',    1, 30, 1, 1, 1, 1);
-GO
 
 -- Resources - Novi Sad (LocationId = 3)
 INSERT INTO Resources (LocationId, Name, Type, SubType, Description, IsAvailable) VALUES
@@ -63,11 +55,9 @@ INSERT INTO Resources (LocationId, Name, Type, SubType, Description, IsAvailable
 (3, 'HD-02', 'HotDesk',       'HotDesk',       'Hot desk, prvi sprat',   1),
 (3, 'DD-01', 'DedicatedDesk', 'DedicatedDesk', 'Fiksni sto, prozor',     1),
 (3, 'PO-01', 'PrivateOffice', NULL,            'Kancelarija za 3 osobe', 1);
-GO
 
 INSERT INTO Resources (LocationId, Name, Type, Description, IsAvailable, Capacity, HasProjector, HasTV, HasWhiteboard, HasOnlineMeetingEquipment) VALUES
 (3, 'Sala Danube', 'MeetingRoom', 'Sala sa pogledom na park', 1, 8, 1, 0, 1, 1);
-GO
 
 -- Users (MembershipTypeId: 1=Dnevna, 2=Fleksibilni, 3=Fiksni, 4=Premium)
 INSERT INTO Users (FirstName, LastName, Email, Phone, MembershipTypeId, MembershipStartDate, MembershipEndDate, Status) VALUES
@@ -81,7 +71,6 @@ INSERT INTO Users (FirstName, LastName, Email, Phone, MembershipTypeId, Membersh
 ('Tamara',  'Markovic',   'tamara.markovic@email.com',  '0618901234', 2, '2024-12-01', '2025-11-30', 'Paused'),
 ('Dragana', 'Lukic',      'dragana.lukic@email.com',    '0629012345', 1, '2025-02-01', '2025-02-01', 'Expired'),
 ('Ivan',    'Mijailovic', 'ivan.mijailovic@email.com',  '0630123456', 3, '2025-03-01', '2026-02-28', 'Active');
-GO
 
 -- Reservations
 INSERT INTO Reservations (UserId, ResourceId, StartDateTime, EndDateTime, Status) VALUES

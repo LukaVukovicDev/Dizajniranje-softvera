@@ -3,11 +3,14 @@ using System.IO;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
+using GUI.Services;
 
 namespace DbSetup
 {
     class Program
     {
+        static IDbFactory _factory = null!;
+
         static void Main(string[] args)
         {
             Console.WriteLine("=== Co-working DB Setup ===\n");
@@ -29,20 +32,24 @@ namespace DbSetup
 
             string brandName = lines[0].Trim();
             string connectionString = lines[1].Trim();
-            bool isMssql = DetectMssql(connectionString);
+
+            // --- 2. Fabrika odlucuje koja je baza (MSSQL ili MySQL) ---
+            _factory = DbFactoryProvider.GetFactory(connectionString);
+            bool isMssql = _factory is MssqlDbFactory;
 
             Console.WriteLine($"Brend:       {brandName}");
             Console.WriteLine($"Tip baze:    {(isMssql ? "MSSQL" : "MySQL")}");
             Console.WriteLine($"Conn string: {connectionString}\n");
 
-            // --- 2. Putanje do skripti ---
+            // --- 3. Putanje do skripti ---
             string dbDir = "C:\\Users\\velja\\source\\repos\\Database_init\\Database_init\\Database_init\\Databases";
             string schemaFile = isMssql
                 ? Path.Combine(dbDir, "create_mssql.sql")
                 : Path.Combine(dbDir, "Create_mysql.sql");
             string seedFile = Path.Combine(dbDir, "Seed.sql");
 
-            // --- 3. Za MSSQL: schema na 'master', seed na pravoj bazi ---
+            // --- 4. Za MSSQL: schema na 'master', seed na pravoj bazi ---
+            // Za MySQL: schema na 'mysql' (sistemska), seed na 'CoWorkingDB'
             string schemaConnStr = connectionString;
             string seedConnStr = connectionString;
 
@@ -52,13 +59,18 @@ namespace DbSetup
                 schemaConnStr = SwapDatabase(connectionString, "master");
                 seedConnStr = SwapDatabase(connectionString, dbName);
             }
+            else
+            {
+                // MySQL: za seed se konektujemo direktno na CoWorkingDB
+                seedConnStr = SwapDatabaseMysql(connectionString, "CoWorkingDB");
+            }
 
-            // --- 4. Pokreni schema ---
+            // --- 5. Pokreni schema ---
             Console.WriteLine("[1/2] Kreiranje baze i tabela...");
             if (!RunSqlFile(schemaFile, schemaConnStr, isMssql)) return;
             Console.WriteLine("      OK\n");
 
-            // --- 5. Pitaj za seed ---
+            // --- 6. Pitaj za seed ---
             Console.Write("[2/2] Ubaciti seed podatke? (y/n): ");
             string answer = Console.ReadLine()?.Trim().ToLower();
             if (answer == "y" || answer == "yes")
@@ -66,7 +78,7 @@ namespace DbSetup
                 if (!RunSqlFile(seedFile, seedConnStr, isMssql)) return;
                 Console.WriteLine("      OK\n");
 
-                // --- 6. Prikazi podatke u terminalu ---
+                // --- 7. Prikazi podatke u terminalu ---
                 Console.Write("Prikazati podatke iz baze? (y/n): ");
                 string showData = Console.ReadLine()?.Trim().ToLower();
                 if (showData == "y" || showData == "yes")
@@ -82,48 +94,52 @@ namespace DbSetup
         }
 
         // ================================================================
-        // PRIKAZ BAZE U TERMINALU
+        // PRIKAZ BAZE U TERMINALU - koristi fabriku za konekciju
         // ================================================================
         static void PrintDatabase(string connStr, bool isMssql)
         {
             Console.WriteLine();
             PrintBanner("PREGLED BAZE PODATAKA");
 
-            using IDbConnection conn = isMssql
-                ? new SqlConnection(connStr)
-                : new MySqlConnection(connStr);
-            conn.Open();
+            // Fabrika pravi konekciju - ne znamo i ne marimo koji tip
+            var factory = DbFactoryProvider.GetFactory(connStr);
+            using var wrapper = factory.CreateConnection();
 
-            // Za MSSQL eksplicitno se prebaci na CoWorkingDB
+            // Za MSSQL eksplicitno prebaci na CoWorkingDB
             if (isMssql)
             {
-                using var useCmd = ((SqlConnection)conn).CreateCommand();
-                useCmd.CommandText = "USE CoWorkingDB";
+                wrapper.Open();
+                using var useCmd = wrapper.CreateCommand("USE CoWorkingDB");
                 useCmd.ExecuteNonQuery();
             }
+            else
+            {
+                wrapper.Open();
+            }
 
-            // MSSQL koristi + za spajanje stringa, MySQL koristi CONCAT()
             string fullNameExpr = isMssql
                 ? "FirstName + ' ' + LastName"
                 : "CONCAT(FirstName, ' ', LastName)";
 
+            var conn = wrapper.Connection;
+
             PrintTableFromQuery(conn, "ADMINS",
-                "SELECT AdminID, Username, CreatedAt FROM Admins");
+                "SELECT Id, Username, CreatedAt FROM Admins");
 
             PrintTableFromQuery(conn, "MEMBERSHIP TYPES",
-                "SELECT ID, Name, Price, DurationDays, MaxReservationHoursPerMonth, IncludesMeetingRooms, MeetingRoomHoursMonth FROM MembershipTypes");
+                "SELECT Id, Name, Price, DurationDays, MaxReservationHoursPerMonth, IncludesMeetingRooms, MeetingRoomHoursPerMonth FROM MembershipTypes");
 
             PrintTableFromQuery(conn, "LOCATIONS",
-                "SELECT ID, Name, City, WorkingHours, MaxCapacity FROM Locations");
+                "SELECT Id, Name, City, WorkingHours, MaxCapacity FROM Locations");
 
             PrintTableFromQuery(conn, "USERS",
-                $"SELECT ID, {fullNameExpr} AS FullName, Email, MembershipTypeID, MembershipStartDate, MembershipEndDate, Status FROM Users");
+                $"SELECT Id, {fullNameExpr} AS FullName, Email, MembershipTypeId, MembershipStartDate, MembershipEndDate, Status FROM Users");
 
             PrintTableFromQuery(conn, "RESOURCES",
-                "SELECT ID, LocationID, Name, ResourceType, IsAvailable, Capacity FROM Resources");
+                "SELECT Id, LocationId, Name, Type, IsAvailable, Capacity FROM Resources");
 
             PrintTableFromQuery(conn, "RESERVATIONS",
-                "SELECT ID, UserID, ResourceID, StartDateTime, EndDateTime, Status FROM Reservations");
+                "SELECT Id, UserId, ResourceId, StartDateTime, EndDateTime, Status FROM Reservations");
         }
 
         static void PrintTableFromQuery(IDbConnection conn, string title, string query)
@@ -135,14 +151,12 @@ namespace DbSetup
 
             using var reader = cmd.ExecuteReader();
 
-            // Ucitaj sve redove i kolone
             var columns = new string[reader.FieldCount];
             var rows = new System.Collections.Generic.List<string[]>();
             var colWidths = new int[reader.FieldCount];
 
             for (int i = 0; i < reader.FieldCount; i++)
             {
-
                 columns[i] = reader.GetName(i);
                 colWidths[i] = columns[i].Length;
             }
@@ -158,14 +172,12 @@ namespace DbSetup
                 rows.Add(row);
             }
 
-            // Iscrtaj tabelu
             string separator = "+" + string.Join("+", Array.ConvertAll(colWidths, w => new string('-', w + 2))) + "+";
 
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.WriteLine(separator);
             Console.ResetColor();
 
-            // Header
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write("|");
             for (int i = 0; i < columns.Length; i++)
@@ -177,13 +189,11 @@ namespace DbSetup
             Console.WriteLine(separator);
             Console.ResetColor();
 
-            // Redovi
             foreach (var row in rows)
             {
                 Console.Write("|");
                 for (int i = 0; i < row.Length; i++)
                 {
-                    // Obojanaj status kolonu
                     if (columns[i].ToLower() == "status" || columns[i].ToLower() == "isavailable")
                     {
                         Console.Write(" ");
@@ -216,22 +226,17 @@ namespace DbSetup
             {
                 case "active":
                 case "1":
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    break;
+                    Console.ForegroundColor = ConsoleColor.Green; break;
                 case "paused":
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    break;
+                    Console.ForegroundColor = ConsoleColor.Yellow; break;
                 case "expired":
                 case "cancelled":
                 case "0":
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    break;
+                    Console.ForegroundColor = ConsoleColor.Red; break;
                 case "completed":
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    break;
+                    Console.ForegroundColor = ConsoleColor.DarkGray; break;
                 default:
-                    Console.ForegroundColor = ConsoleColor.White;
-                    break;
+                    Console.ForegroundColor = ConsoleColor.White; break;
             }
             Console.Write(value.PadRight(width));
             Console.ResetColor();
@@ -256,25 +261,9 @@ namespace DbSetup
         }
 
         // ================================================================
-        // MSSQL / MySQL izvrsavanje
+        // SQL izvrsavanje - koristi fabriku samo za schema/seed skripte
+        // (moraju raw SQL jer sadrze GO i USE naredbe)
         // ================================================================
-        static bool DetectMssql(string cs)
-        {
-            string lower = cs.ToLowerInvariant();
-            if (lower.Contains("trusted_connection") ||
-                lower.Contains("integrated security") ||
-                lower.Contains("initial catalog"))
-                return true;
-
-            if (lower.Contains("uid=") ||
-                lower.Contains("sslmode") ||
-                lower.Contains("port=3306") ||
-                lower.Contains("allowuservariables"))
-                return false;
-
-            return false;
-        }
-
         static bool RunSqlFile(string filePath, string connStr, bool isMssql)
         {
             if (!File.Exists(filePath))
@@ -298,6 +287,8 @@ namespace DbSetup
             }
         }
 
+        // ExecuteMssql i ExecuteMysql rade direktno sa SqlConnection jer
+        // moraju da hendluju GO batche i USE naredbe koje fabrika ne podrzava
         static void ExecuteMssql(string sql, string connStr)
         {
             using var conn = new SqlConnection(connStr);
@@ -349,6 +340,14 @@ namespace DbSetup
         {
             var builder = new SqlConnectionStringBuilder(connStr);
             builder.InitialCatalog = newDb;
+            return builder.ConnectionString;
+        }
+
+        // Za MySQL - menja Database= vrednost u connection stringu
+        static string SwapDatabaseMysql(string connStr, string newDb)
+        {
+            var builder = new MySql.Data.MySqlClient.MySqlConnectionStringBuilder(connStr);
+            builder.Database = newDb;
             return builder.ConnectionString;
         }
 
